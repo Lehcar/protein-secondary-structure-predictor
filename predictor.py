@@ -7,7 +7,7 @@
 
 # # Step 1: Importing libraries
 
-# In[3]:
+# In[86]:
 
 
 import numpy as np
@@ -23,7 +23,7 @@ import re
 
 # # Step 2: Reading in the Data and Parsing the Data
 
-# In[4]:
+# In[87]:
 
 
 file = open("dataset.txt", "r")
@@ -39,7 +39,7 @@ file = open("dataset.txt", "r")
 # '< secondary structure>' <br>
 # '\n' <br>
 
-# In[5]:
+# In[88]:
 
 
 def parse_data(file, sequences, structures):
@@ -90,7 +90,7 @@ parse_data(file, sequences, structures)
 
 # ### Average Length of sequence
 
-# In[6]:
+# In[89]:
 
 
 def avg_seqs_length(sequences):
@@ -104,7 +104,7 @@ avg_seqs_length(sequences)
 # ### Functions for debugging 
 # Ensure that the length of the amino acid sequence matches the length of the structure sequence
 
-# In[7]:
+# In[90]:
 
 
 # For Debugging
@@ -132,7 +132,7 @@ validate_lengths(sequences, structures)
 # ### Perform one-hot encoding
 # Referenced: https://dmnfarrell.github.io/bioinformatics/mhclearning for encoding
 
-# In[8]:
+# In[91]:
 
 
 codes = ['A', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'K', 'L',
@@ -159,7 +159,7 @@ for sequence in sequences:
 # ### Example of the result after encoding
 # An example dataframe for the first sequence
 
-# In[9]:
+# In[92]:
 
 
 print('Encoded sequence for: \n{}\n'.format(sequences[0]))
@@ -170,7 +170,7 @@ encoded_sequences[0]
 
 # ### Combine all encoded amino acid sequences into one Dataframe
 
-# In[10]:
+# In[93]:
 
 
 seq_df = pd.DataFrame(columns=codes)
@@ -182,7 +182,7 @@ seq_df
 # ## Process the target variable (secondary structure)
 # ### Convert from Category (-,E,H) to Numerical Values
 
-# In[22]:
+# In[94]:
 
 
 struct_df = pd.DataFrame(columns=['struct'])
@@ -202,7 +202,7 @@ struct_df
 
 # ### See how many coils, sheets, and helixes there are
 
-# In[12]:
+# In[95]:
 
 
 counts = struct_df.struct.value_counts()
@@ -211,7 +211,7 @@ counts.apply(lambda x: x / counts.sum())
 
 # ### Let's make a bar graph to visualize this
 
-# In[28]:
+# In[96]:
 
 
 ax = sns.countplot(x='struct', data=graph_df)
@@ -222,7 +222,7 @@ ax
 
 # ## Validate the number of rows match in both dataframes
 
-# In[278]:
+# In[97]:
 
 
 len(seq_df.index) == len(struct_df.index)
@@ -232,7 +232,7 @@ len(seq_df.index) == len(struct_df.index)
 
 # ## Train-Test Split
 
-# In[279]:
+# In[98]:
 
 
 #70-30 Train-Test Split
@@ -242,7 +242,7 @@ print('x_train', x_train.shape, '\ny_train', y_train.shape, '\nx_test', x_test.s
 
 # ## Build Neural Network
 
-# In[280]:
+# In[99]:
 
 
 #model = MLPClassifier() #Default Model
@@ -255,7 +255,7 @@ model = MLPClassifier(activation='logistic', hidden_layer_sizes=(500, 100), max_
 model.fit(x_train, y_train.values.ravel())
 
 
-# In[281]:
+# In[100]:
 
 
 model.n_layers_
@@ -265,7 +265,7 @@ model.n_layers_
 
 # ## Accuracy
 
-# In[282]:
+# In[101]:
 
 
 preds = model.predict(x_test)
@@ -276,7 +276,7 @@ print('Accuracy for training data: {:.2f}%'.format(accuracy_score(y_train, model
 # ## Confusion Matrices
 # Followed: https://stackoverflow.com/questions/35572000/how-can-i-plot-a-confusion-matrix as a guide to making it pretty
 
-# In[283]:
+# In[102]:
 
 
 #needed for using matplotlib in jupyter notebook
@@ -304,7 +304,7 @@ def create_cm(title, cm):
 
 # ### Confusion Matrix For Test Set
 
-# In[284]:
+# In[103]:
 
 
 array_test = confusion_matrix(y_test, preds)
@@ -313,7 +313,7 @@ create_cm("Confusion Matrix for Test Set", array_test)
 
 # ### Confusion Matrix For Training Set
 
-# In[285]:
+# In[104]:
 
 
 array_train= confusion_matrix(y_train, model.predict(x_train))
@@ -333,25 +333,25 @@ create_cm("Confusion Matrix for Training Set", array_train)
 # Precison: # of correctly identified / # of all identified <br>
 # Recall: # of correctly identified / # of all actual
 
-# In[286]:
+# In[105]:
 
 
 # we use the confusion matrix (cm_array) to make these calculations
-def calculate_precision(cm_array, position, name):
-    precision = cm_array[position][position] / np.sum(cm_array[position])
-    print("Precision for {}: {:.2f}%".format(name, precision*100))
-
 def calculate_recall(cm_array, position, name):
+    precision = cm_array[position][position] / np.sum(cm_array[position])
+    print("Recall for {}: {:.2f}%".format(name, precision*100))
+
+def calculate_precision(cm_array, position, name):
     total = 0
     for i in range(0, len(cm_array)):
         total += cm_array[i][position]
     recall = cm_array[position][position] / total
-    print("Recall for {}: {:.2f}%".format(name, recall*100))
+    print("Precision for {}: {:.2f}%".format(name, recall*100))
 
 
 # ### Test Set Precision and Recall
 
-# In[287]:
+# In[106]:
 
 
 calculate_precision(array_test, 0, "coil")
@@ -366,7 +366,7 @@ calculate_recall(array_test, 2, "helix")
 
 # ### Training Set Precision and Recall
 
-# In[288]:
+# In[107]:
 
 
 calculate_precision(array_train, 0, "coil")
@@ -382,18 +382,18 @@ calculate_recall(array_train, 2, "helix")
 # ### Classification Report using sklearn's library
 # I found out about this after doing the above code, but I wanted to see what it did here. 
 
-# In[ ]:
+# In[108]:
 
 
 from sklearn.metrics import classification_report 
-print(classification_report(actual, preds))
+print(classification_report(y_test, preds))
 
 
 # ## Step 6: Predict
 
 # ### Read in the file containing the amino acid sequences to predict their secondary structure
 
-# In[289]:
+# In[109]:
 
 
 file_predict=open("sample_predict_seq.txt", "r")
@@ -403,7 +403,7 @@ file_predict=open("sample_predict_seq.txt", "r")
 #     Make sure to have at least one newline character ("\n") at the end of the text file <br>
 #     (i.e. press enter after the last sequence)
 
-# In[290]:
+# In[110]:
 
 
 def parse_aa_seqs(file, predict_seqs):
@@ -432,7 +432,7 @@ def parse_aa_seqs(file, predict_seqs):
             
 
 
-# In[291]:
+# In[111]:
 
 
 predict_seqs = []
@@ -441,7 +441,7 @@ parse_aa_seqs(file_predict, predict_seqs)
 
 # ### Encode the sequences (One-hot Encoding)
 
-# In[297]:
+# In[112]:
 
 
 encoded_predict_seqs = []
@@ -452,7 +452,7 @@ encoded_predict_seqs[0]
 
 # ### Predict
 
-# In[293]:
+# In[113]:
 
 
 predictions = []
@@ -463,7 +463,7 @@ for seq in encoded_predict_seqs:
 # ### Change numbers back to symbols
 # Change the results from numerical to symbols for the secondary structures ('-' = coil, 'H' = helix, 'E' = Sheet)
 
-# In[294]:
+# In[114]:
 
 
 def convert_num_to_struct(seq, legend):
@@ -478,7 +478,7 @@ def convert_num_to_struct(seq, legend):
     return symbols
 
 
-# In[295]:
+# In[115]:
 
 
 pred_structs = []
@@ -488,7 +488,7 @@ for seq in predictions:
 
 # ## Print the Results
 
-# In[296]:
+# In[116]:
 
 
 for i in range(0, len(pred_structs)):
@@ -504,36 +504,6 @@ for i in range(0, len(pred_structs)):
 
 # Accuracy, precision, and recall improved when the neural network made no predictions on sheet structure. <br>
 # Of the amino acid sequences given, a coil structure is the most common. <br>
-
-# ### Default Model Summary - Best Run
-# <b> Model Parameters</b> <br>
-# MLPClassifier(activation='relu', alpha=0.0001, batch_size='auto', beta_1=0.9,<br>
-#               beta_2=0.999, early_stopping=False, epsilon=1e-08,<br>
-#               hidden_layer_sizes=(100,), learning_rate='constant',<br>
-#               learning_rate_init=0.001, max_iter=200, momentum=0.9,<br>
-#               n_iter_no_change=10, nesterovs_momentum=True, power_t=0.5,<br>
-#               random_state=None, shuffle=True, solver='adam', tol=0.0001,<br>
-#               validation_fraction=0.1, verbose=False, warm_start=False) <br>
-#         
-# <b> Results</b> <br> 
-#     Accuracy: 51.33% <br>
-#     Precision for coil, sheet, helix (respectively): 72.51%, 31.98%, 35.10% <br>
-#     Recall for coil, shee, helix (respectively): 55.80%, 49.02%, 42.65%
-
-# ### Tuned Model Summary (Logistic) - Best Run
-# <b> Model Parameters</b> <br>
-# MLPClassifier(activation='logistic', alpha=0.001, batch_size='auto', beta_1=0.9,<br>
-#               beta_2=0.999, early_stopping=False, epsilon=1e-08,<br>
-#               hidden_layer_sizes=(500, 100), learning_rate='constant',<br>
-#               learning_rate_init=0.001, max_iter=1000, momentum=0.9,<br>
-#               n_iter_no_change=50, nesterovs_momentum=True, power_t=0.5,<br>
-#               random_state=None, shuffle=True, solver='adam', tol=0.0001,<br>
-#               validation_fraction=0.1, verbose=False, warm_start=False)<br>
-#         
-# <b> Results</b> <br> 
-#     Accuracy: 52.30% <br>
-#     Precision for coil, sheet, helix (respectively): 59.57%, 40.51%, 50.38% <br>
-#     Recall for coil, shee, helix (respectively): 63.15%, 46.00%, 43.25%
 
 # ## Conclusion
 # 
